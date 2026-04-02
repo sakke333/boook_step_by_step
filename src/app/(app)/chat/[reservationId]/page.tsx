@@ -299,7 +299,7 @@ export default function ChatPage({ params }: Props) {
           </p>
           {/* トークン送付促進メッセージ（要件6.2） */}
           <p className="text-sm text-green-700 mb-3">
-            Giverにトークンを送りましょう！感謝の気持ちを伝えることで、本の循環が広がります。
+            Giverにトークンを送ることができます！本の循環が広がるかも。
           </p>
           <div className="flex flex-col gap-2">
             {/* トークン送付画面への遷移ボタン（要件6.2） */}
