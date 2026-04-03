@@ -6,6 +6,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+
+// html5-qrcode はブラウザ専用のためSSRを無効にしてdynamic import
+const QrScanner = dynamic(() => import("@/components/QrScanner"), { ssr: false });
+// qrcode もブラウザ専用のためSSRを無効にしてdynamic import
+const UserIdQrModal = dynamic(() => import("@/components/UserIdQrModal"), { ssr: false });
 
 interface TokenTransaction {
   id: string;
@@ -37,6 +43,8 @@ export default function TokensPage() {
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  const [showMyQr, setShowMyQr] = useState(false);
 
   const fetchHistory = useCallback(async () => {
     setIsLoading(true);
@@ -120,15 +128,25 @@ export default function TokensPage() {
     <div className="max-w-lg mx-auto p-4 pb-24">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">トークン</h1>
 
-      {!isLoading && !error && (
-      <div style={{ background: "#fefce8", border: "1px solid #fde047", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
-        <p style={{ fontSize: "12px", color: "#713f12", marginBottom: "4px", fontWeight: 600 }}>あなたのユーザーID</p>
-        <p style={{ fontSize: "13px", fontFamily: "monospace", color: "#1c1917", wordBreak: "break-all" }}>
-          {currentUserId !== undefined ? currentUserId : "セッション読み込み中..."}
-        </p>
-        <p style={{ fontSize: "11px", color: "#92400e", marginTop: "4px" }}>このIDを相手に伝えるとトークンを受け取れます</p>
-      </div>
+      {/* QRスキャナーモーダル */}
+      {showQrScanner && (
+        <QrScanner
+          onScan={(text) => {
+            setToUserId(text);
+            setShowQrScanner(false);
+          }}
+          onClose={() => setShowQrScanner(false)}
+        />
       )}
+
+      {/* 自分のユーザーIDのQRコード表示モーダル */}
+      {showMyQr && currentUserId && (
+        <UserIdQrModal
+          userId={currentUserId}
+          onClose={() => setShowMyQr(false)}
+        />
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -157,10 +175,10 @@ export default function TokensPage() {
 
             <button
               type="button"
-              disabled
-              className="w-full mb-4 py-2 px-4 border border-dashed border-gray-300 rounded-lg text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+              onClick={() => setShowQrScanner(true)}
+              className="w-full mb-4 py-2 px-4 border border-blue-300 rounded-lg text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors font-medium"
             >
-              QRコード読み取り（準備中）
+              📷 QRコードを読み取る
             </button>
 
             <form onSubmit={handleSend} noValidate>
@@ -211,9 +229,29 @@ export default function TokensPage() {
               </button>
             </form>
           </div>
+          
+
+          {/* ユーザーIDブロック */}
+          <div style={{ background: "#fefce8", border: "1px solid #fde047", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "12px", color: "#713f12", marginBottom: "4px", fontWeight: 600 }}>あなたのユーザーID</p>
+            <p style={{ fontSize: "13px", fontFamily: "monospace", color: "#1c1917", wordBreak: "break-all" }}>
+              {currentUserId !== undefined ? currentUserId : "セッション読み込み中..."}
+            </p>
+            <p style={{ fontSize: "11px", color: "#92400e", marginTop: "4px" }}>相手にQRコードを読み取ってもらう、または、このIDを伝えるとトークンを受け取れます</p>
+            {currentUserId && (
+              <button
+                onClick={() => setShowMyQr(true)}
+                style={{ marginTop: "10px", width: "100%", padding: "6px 0", background: "#fde047", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 600, color: "#713f12", cursor: "pointer" }}
+              >
+                QRコードを表示する
+              </button>
+            )}
+          </div>
+
           <div>
             <p className="text-sm font-sm text-center	text-gray-900 mb-3">このトークンは予告なく、なくなる可能性があります</p>
           </div>
+          
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-3">取引履歴</h2>
 
