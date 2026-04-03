@@ -96,7 +96,7 @@ export default function BooksPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="タイトル・著者名・ISBNで検索"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"

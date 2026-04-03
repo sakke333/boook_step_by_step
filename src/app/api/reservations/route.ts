@@ -109,3 +109,56 @@ export async function POST(request: NextRequest) {
   // 7. 201で作成したReservationを返す
   return NextResponse.json(reservation, { status: 201 });
 }
+
+/**
+ * GET /api/reservations
+ * - role=giver: 自分がGiverの本に対するACTIVEな予約一覧（受け取り待ち）
+ * - role=receiver（デフォルト）: 自分がReceiverとして持つACTIVEな予約一覧
+ */
+export async function GET(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return Errors.unauthorized();
+  }
+
+  const { searchParams } = new URL(request.url);
+  const role = searchParams.get("role");
+
+  if (role === "giver") {
+    // 自分がGiverの本に対するACTIVEな予約一覧
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        status: "ACTIVE",
+        bookListing: { giverId: session.user.id },
+      },
+      include: {
+        bookListing: {
+          include: {
+            giver: { select: { id: true, name: true, image: true } },
+          },
+        },
+        receiver: { select: { id: true, name: true, image: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(reservations);
+  }
+
+  // デフォルト: 自分がReceiverとして持つACTIVEな予約一覧
+  const reservations = await prisma.reservation.findMany({
+    where: {
+      receiverId: session.user.id,
+      status: "ACTIVE",
+    },
+    include: {
+      bookListing: {
+        include: {
+          giver: { select: { id: true, name: true, image: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json(reservations);
+}

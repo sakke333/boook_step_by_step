@@ -9,12 +9,27 @@ import { Errors } from "@/lib/errors";
 
 /**
  * GET /api/books
- * 本の一覧取得（AVAILABLE/RESERVEDのみ、キーワード検索対応）
- * 認証不要 - 誰でも取得可能
+ * - mine=true: 自分が出品したAVAILABLEな本の一覧（認証必須）
+ * - それ以外: 本の一覧取得（AVAILABLE/RESERVEDのみ、キーワード検索対応、認証不要）
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") ?? "";
+  const mine = searchParams.get("mine") === "true";
+
+  if (mine) {
+    // 自分が出品したAVAILABLEな本の一覧
+    const session = await auth();
+    if (!session?.user?.id) {
+      return Errors.unauthorized();
+    }
+    const books = await prisma.bookListing.findMany({
+      where: { giverId: session.user.id, status: "AVAILABLE" },
+      include: { giver: { select: { id: true, name: true, image: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(books);
+  }
 
   // キーワード検索条件の構築（タイトル・著者名・ISBNを対象）
   const searchCondition = query

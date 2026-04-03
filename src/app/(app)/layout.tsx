@@ -4,6 +4,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "../../../auth";
 import TabBar from "@/components/TabBar";
+import NotificationListener from "@/components/NotificationListener";
 
 export default async function AppLayout({
   children,
@@ -20,6 +21,9 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* グローバル通知リスナー（予約・メッセージ通知） */}
+      <NotificationListener />
+
       {/* メインコンテンツ（タブバー分の余白を下部に確保） */}
       <main className="pb-16">{children}</main>
 

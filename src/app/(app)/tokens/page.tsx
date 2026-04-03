@@ -211,7 +211,9 @@ export default function TokensPage() {
               </button>
             </form>
           </div>
-
+          <div>
+            <p className="text-sm font-sm text-center	text-gray-900 mb-3">このトークンは予告なく、なくなる可能性があります</p>
+          </div>
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-3">取引履歴</h2>
 
