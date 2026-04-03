@@ -88,7 +88,7 @@ export default function ReservationsPage() {
 
   return (
     <div className="max-w-lg mx-auto p-4 pb-24">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">予約・出品管理</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">状況</h1>
 
       {/* タブナビゲーション */}
       <div className="flex border-b border-gray-200 mb-6">

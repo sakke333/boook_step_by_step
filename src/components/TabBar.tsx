@@ -53,7 +53,7 @@ const TABS = [
     ),
   },
   {
-    label: "予約中",
+    label: "状況",
     href: "/reservations",
     // カレンダーアイコン
     icon: (
