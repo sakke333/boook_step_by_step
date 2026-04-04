@@ -11,7 +11,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 // PostgreSQL接続アダプターを生成（Prisma 7必須）
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+// Vercel環境ではSupabaseのTransaction Pooler（ポート6543）を使用する
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
 
 // シングルトンパターンでPrismaクライアントを生成
 export const prisma =
