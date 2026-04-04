@@ -1,0 +1,116 @@
+// Prismaスキーマ定義
+// 大学教科書シェアリングアプリ - フェーズ1（Web2構成）
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+// Prisma 7では接続URLはprisma.config.tsで管理する
+// 詳細: https://pris.ly/d/config-datasource
+datasource db {
+  provider = "postgresql"
+}
+
+// ユーザーモデル
+// Googleアカウントで認証した大学生ユーザーを表す
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  image         String?
+  // フェーズ2移行用（Polygon/ERC-4337対応時に使用）
+  walletAddress String?
+  createdAt     DateTime @default(now())
+
+  // Token残高（高速アクセス用キャッシュ。Token_Transactionの集計からも再現可能）
+  tokenBalance Int @default(10)
+
+  // リレーション
+  bookListings         BookListing[]
+  reservations         Reservation[]      @relation("ReceiverReservations")
+  sentMessages         Message[]
+  sentTransactions     TokenTransaction[] @relation("SentTransactions")
+  receivedTransactions TokenTransaction[] @relation("ReceivedTransactions")
+}
+
+// 本の出品情報モデル
+// Giverが登録した教科書の出品情報を表す
+model BookListing {
+  id            String            @id @default(cuid())
+  title         String // タイトル（必須）
+  author        String? // 著者名
+  isbn          String? // ISBN
+  condition     String // 状態（良好・普通・傷あり等）
+  location      String // 受け渡し希望場所（必須）
+  availableTime String? // 受け渡し可能時間（自由テキスト、例：「月〜金の12時〜13時」）
+  description   String? // 説明文
+  status        BookListingStatus @default(AVAILABLE)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // リレーション
+  giverId     String
+  giver       User         @relation(fields: [giverId], references: [id])
+  reservation Reservation?
+}
+
+// 本の出品ステータス
+enum BookListingStatus {
+  AVAILABLE // 受け取り可能
+  RESERVED // 予約済み
+  COMPLETED // 受け渡し完了
+}
+
+// 予約モデル
+// ReceiverがBook_Listingに対して行う予約を表す
+model Reservation {
+  id        String            @id @default(cuid())
+  status    ReservationStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // リレーション
+  bookListingId String      @unique
+  bookListing   BookListing @relation(fields: [bookListingId], references: [id])
+  receiverId    String
+  receiver      User        @relation("ReceiverReservations", fields: [receiverId], references: [id])
+  messages      Message[]
+}
+
+// 予約ステータス
+enum ReservationStatus {
+  ACTIVE // 有効
+  CANCELLED // キャンセル済み
+  COMPLETED // 受け渡し完了
+}
+
+// チャットメッセージモデル
+// GiverとReceiverが受け渡し調整に使うメッセージを表す
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  // リレーション
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  senderId      String
+  sender        User        @relation(fields: [senderId], references: [id])
+}
+
+// トークン取引履歴モデル
+// Token残高はこのレコードの集計から再現可能（要件9.2）
+model TokenTransaction {
+  id        String   @id @default(cuid())
+  amount    Int
+  note      String? // 取引メモ（初期付与・送付など）
+  createdAt DateTime @default(now())
+
+  // リレーション
+  // fromUserIdがNullの場合はシステム付与（初期トークン等）
+  fromUserId String?
+  fromUser   User?   @relation("SentTransactions", fields: [fromUserId], references: [id])
+  toUserId   String
+  toUser     User    @relation("ReceivedTransactions", fields: [toUserId], references: [id])
+}

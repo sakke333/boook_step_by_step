@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/prisma"
 }
 
 // Prisma 7では接続URLはprisma.config.tsで管理する
