@@ -3,11 +3,13 @@
 // 設計書: Reservationレコード自体がChatルームを兼ねる設計（要件5.1）
 
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { auth } from "../../../../auth";
 import { prisma } from "@/lib/prisma";
 import { Errors } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
+
+// Prisma 7: トランザクションクライアントの型をインスタンスから取得
+type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 /**
  * POST /api/reservations
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
   // 5. Prismaトランザクションで:
   //    - Reservationレコード作成（Chatルームを兼ねる）
   //    - BookListing.status = RESERVED を同時実行
-  const reservation = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const reservation = await prisma.$transaction(async (tx: TransactionClient) => {
     // Reservationレコードを作成（要件4.1, 5.1）
     const newReservation = await tx.reservation.create({
       data: {
