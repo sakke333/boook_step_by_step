@@ -66,6 +66,7 @@ export default function ChatPage({ params }: Props) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
 
   // アプリ内通知の状態（要件5.4）
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -158,7 +159,7 @@ export default function ChatPage({ params }: Props) {
             ...prev,
             {
               id: notificationId,
-              message: `${newMessage.sender.name ?? "相手"}からメッセージが届きました`,
+              message: `${newMessage.sender.id}からメッセージが届きました`,
             },
           ]);
         }
@@ -352,7 +353,7 @@ export default function ChatPage({ params }: Props) {
               {/* 送信者名（相手のメッセージのみ表示） */}
               {!isMine && (
                 <span className="text-xs text-gray-500 px-1">
-                  {msg.sender.name ?? "ユーザー"}
+                  {msg.sender.id}
                 </span>
               )}
               <div
@@ -384,14 +385,41 @@ export default function ChatPage({ params }: Props) {
               {completeError}
             </p>
           )}
-          <button
-            onClick={handleComplete}
-            disabled={isCompleting}
-            aria-label="受け渡し完了"
-            className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            {isCompleting ? "処理中..." : "受け渡し完了"}
-          </button>
+          {/* 確認ダイアログ */}
+          {showCompleteConfirm ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-2">
+              <p className="text-sm text-yellow-800 font-medium mb-2">
+                受け渡しを完了してよいですか？
+              </p>
+              <p className="text-xs text-yellow-700 mb-3">
+                完了後は取り消しできません。
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleComplete}
+                  disabled={isCompleting}
+                  className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isCompleting ? "処理中..." : "完了する"}
+                </button>
+                <button
+                  onClick={() => setShowCompleteConfirm(false)}
+                  disabled={isCompleting}
+                  className="flex-1 bg-gray-100 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCompleteConfirm(true)}
+              aria-label="受け渡し完了"
+              className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              受け渡し完了
+            </button>
+          )}
         </div>
       )}
 
