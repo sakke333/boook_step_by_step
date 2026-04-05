@@ -171,6 +171,17 @@ exports.Prisma.TokenTransactionScalarFieldEnum = {
   toUserId: 'toUserId'
 };
 
+exports.Prisma.WishListingScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  author: 'author',
+  isbn: 'isbn',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  requesterId: 'requesterId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -202,7 +213,8 @@ exports.Prisma.ModelName = {
   BookListing: 'BookListing',
   Reservation: 'Reservation',
   Message: 'Message',
-  TokenTransaction: 'TokenTransaction'
+  TokenTransaction: 'TokenTransaction',
+  WishListing: 'WishListing'
 };
 
 /**
