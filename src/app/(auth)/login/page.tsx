@@ -37,10 +37,10 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
         {/* アプリタイトル */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">
-            教科書シェアリング
+            Book Sharing
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            大学生のための教科書シェアリングアプリ
+            大学生のための本シェアリングアプリ
           </p>
         </div>
 
