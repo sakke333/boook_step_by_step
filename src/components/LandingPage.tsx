@@ -37,6 +37,8 @@ export default function LandingPage() {
   const [books, setBooks] = useState<BookListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  // 「予約する」を押した本のIDを管理する
+  const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
 
   // 本の一覧を取得する（認証不要のAPIを使用）
   useEffect(() => {
@@ -128,14 +130,36 @@ export default function LandingPage() {
                     <span>場所：{book.location}</span>
                     {book.availableTime && <span>時間：{book.availableTime}</span>}
                   </div>
-                  {/* 予約ボタン（ログイン促進） */}
+                  {/* 予約ボタン → ログイン促進インライン展開 */}
                   {book.status === "AVAILABLE" && (
-                    <button
-                      onClick={handleSignIn}
-                      className="w-full py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      ログインして予約する
-                    </button>
+                    expandedBookId === book.id ? (
+                      // 「予約する」を押した後に展開されるログインUI
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-800 mb-2">
+                          予約するにはログインが必要です
+                        </p>
+                        <button
+                          onClick={handleSignIn}
+                          disabled={isSigningIn}
+                          className="w-full py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        >
+                          {isSigningIn ? "ログイン中..." : "Googleでログイン"}
+                        </button>
+                        <button
+                          onClick={() => setExpandedBookId(null)}
+                          className="w-full mt-1 py-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setExpandedBookId(book.id)}
+                        className="w-full mt-3 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        予約する
+                      </button>
+                    )
                   )}
                 </div>
               </li>
